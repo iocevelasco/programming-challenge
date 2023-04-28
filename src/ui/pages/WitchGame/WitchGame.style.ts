@@ -1,4 +1,4 @@
-import { Box, css, styled } from '@mui/material'
+import { Box, Chip, css, styled } from '@mui/material'
 
 export const LayoutWrapperStyled = styled(Box)(
   ({ theme }) => css`
@@ -24,5 +24,11 @@ export const WrapperChipsStyled = styled(Box)(
     display: flex;
     gap: ${theme.spacing(2)};
     flex-wrap: wrap;
+  `
+)
+
+export const ChipStyled = styled(Chip)(
+  ({ theme }) => css`
+    text-transform: capitalize;
   `
 )

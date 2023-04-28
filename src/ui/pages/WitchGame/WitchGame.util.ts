@@ -1,16 +1,33 @@
-export type potionsType = string[]
-export type combinationType = potionsType[][]
-export type damageType = { [key: string]: number }
+export type PotionsType = string[]
+export type CombinationType = PotionsType[][]
+export type DamageType = { [key: string]: number }
 
 export enum WitchGameMessages {
-  inputLabel = 'Select potions',
-  inputLabelId = 'potion-selector-field',
+  InputLabel = 'Select potions',
+  ButtonLabelReset = 'Reset Attacks',
+  ButtonLabelAttack = 'Attacks',
 }
 
-export const potionsCollections: potionsType = ['red', 'blue', 'green', 'yellow', 'gray']
+export const potionsCollections: PotionsType = ['red', 'blue', 'green', 'yellow', 'gray']
 
-export const calculateDamage = (combination: potionsType) => {
-  const damageByPotions: damageType = {
+export const getAllCombinations = (combinationsCollections: PotionsType): CombinationType => {
+  if (combinationsCollections.length === 0) {
+    return [[]]
+  }
+
+  return getAllCombinations(combinationsCollections.slice(1)).flatMap((combination: any) => [
+    [combinationsCollections[0], ...combination],
+    combination,
+  ])
+}
+
+export const filterCombinations = (combinations: CombinationType) => {
+  const newCombinations = combinations.filter((c) => new Set(c.map((p) => p[0])).size === c.length)
+  return newCombinations
+}
+
+export const calculateDamage = (combination: PotionsType) => {
+  const damageByPotions: DamageType = {
     1: 0.03,
     2: 0.05,
     3: 0.1,
@@ -19,5 +36,23 @@ export const calculateDamage = (combination: potionsType) => {
   }
 
   const numPotions = combination.length
+
   return damageByPotions[numPotions] || 0
+}
+
+export const sortByDamage = (
+  a: {
+    combination: PotionsType[]
+    damage: number
+  },
+  b: {
+    combination: PotionsType[]
+    damage: number
+  }
+) => {
+  return b.damage - a.damage
+}
+
+export const mappedDamage = (values: { combination: PotionsType[]; damage: number }) => {
+  return `Using ${values.combination.length} the best attack is %${values.damage * 100}`
 }

@@ -9,45 +9,42 @@ import {
   calculateDamage,
   sortByDamage,
   mappedDamage,
+  mappedPotions,
 } from './WitchGame.util'
 
 export default function WitchGame() {
   const [potionsSelected, setPotionsSelected] = useState<string[]>([])
-  const handleResetAttack = () => {
-    setPotionsSelected([])
-  }
+  const [attackList, setAttackList] = useState<string[]>([])
+  const handleResetAttack = () => setPotionsSelected([])
 
-  const handleAddPotion = (newPotion: string) => {
+  const handleAddPotion = (newPotion: string) =>
     setPotionsSelected((prevValue) => [...prevValue, newPotion])
-  }
 
   const handleDelete = (potion: number) => {
     const newPotionList = potionsSelected.filter((item, index) => index !== potion)
     setPotionsSelected(newPotionList)
   }
 
-  const allCombinations = getAllCombinations(potionsSelected)
+  const handlerAttack = () => {
+    const allCombinations = getAllCombinations(potionsSelected)
 
-  const validCombinations = filterCombinations(allCombinations)
+    const validCombinations = filterCombinations(allCombinations)
 
-  const damageByCombination = validCombinations.map((c) => ({
-    combination: c,
-    damage: calculateDamage(c),
-  }))
+    const damageByCombination = validCombinations.map((c) => ({
+      combination: c,
+      damage: calculateDamage(c),
+    }))
 
-  const mappedPotions = potionsSelected.reduce((acc, item) => {
-    return {
-      ...acc,
-      [item]: acc[item] ? acc[item] + 1 : 1,
-    }
-  }, {} as { [key: string]: number })
+    const attackList = damageByCombination.sort(sortByDamage).reduce((acc, item) => {
+      return {
+        ...acc,
+        [item.combination.length]: item,
+      }
+    }, {} as { [key: string]: number })
+    setAttackList(attackList)
+  }
 
-  const attackList = damageByCombination.sort(sortByDamage).reduce((acc, item) => {
-    return {
-      ...acc,
-      [item.combination.length]: item,
-    }
-  }, {} as { [key: string]: number })
+  const mappedPotionsSelected = mappedPotions(potionsSelected)
 
   return (
     <LayoutWrapperStyled>
@@ -58,17 +55,13 @@ export default function WitchGame() {
         ))}
       </WrapperChipsStyled>
       <WrapperChipsStyled marginBottom={2}>
-        {Object.keys(mappedPotions).map((potion, index) => (
-          <ChipStyled
-            key={index}
-            label={`${potion} ${mappedPotions[potion]}`}
-            onDelete={() => handleDelete(index)}
-          />
+        {mappedPotionsSelected.map(({ label }, index) => (
+          <ChipStyled key={index} label={label} onDelete={() => handleDelete(index)} />
         ))}
       </WrapperChipsStyled>
       <Grid container>
         <Grid item>
-          <Button variant="contained" disabled={!potionsSelected.length}>
+          <Button onClick={handlerAttack} variant="contained" disabled={!potionsSelected.length}>
             {WitchGameMessages.ButtonLabelAttack}
           </Button>
         </Grid>

@@ -56,3 +56,16 @@ export const sortByDamage = (
 export const mappedDamage = (values: { combination: PotionsType[]; damage: number }) => {
   return `Using ${values.combination.length} the best attack is %${values.damage * 100}`
 }
+
+export const mappedPotions = (potionsSelected: string[]) => {
+  const calculatePotions = potionsSelected.reduce((acc, item) => {
+    return {
+      ...acc,
+      [item]: acc[item] ? acc[item] + 1 : 1,
+    }
+  }, {} as { [key: string]: number })
+
+  return Object.keys(calculatePotions).map((potion) => ({
+    label: ` ${potion} ${calculatePotions[potion]}`,
+  }))
+}

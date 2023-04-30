@@ -1,6 +1,15 @@
-export type PotionsType = string[]
-export type CombinationType = PotionsType[][]
-export type DamageType = { [key: string]: number }
+export type Potion = string[]
+export type PotionCombination = PotionColor[][]
+export type PotionQuantities = {
+  [key: string]: number
+}
+export type Attack = {
+  potionQuantities: PotionQuantities
+  damage: number
+}
+export type PotionColor = {
+  color: string
+}
 
 export enum WitchGameMessages {
   InputLabel = 'Select potions',
@@ -8,51 +17,85 @@ export enum WitchGameMessages {
   ButtonLabelAttack = 'Attacks',
 }
 
-export const potionsCollections: PotionsType = ['red', 'blue', 'green', 'yellow', 'gray']
+export const potionsCollections: Potion = ['red', 'blue', 'green', 'yellow', 'gray']
 
-export const getAllCombinations = (combinationsCollections: PotionsType): CombinationType => {
-  if (combinationsCollections.length === 0) {
-    return [[]]
+export const combinations = (potions: PotionColor[], n: number) => {
+  if (n === 1) {
+    return potions.map((item) => [item])
+  }
+  const comb: PotionCombination = []
+  for (let i = 0; i <= potions.length - n; i++) {
+    const head = potions.slice(i, i + 1)
+    const tailCombs = combinations(potions.slice(i + 1), n - 1)
+    tailCombs.forEach((tail) => comb.push(head.concat(tail)))
   }
 
-  return getAllCombinations(combinationsCollections.slice(1)).flatMap((combination: any) => [
-    [combinationsCollections[0], ...combination],
-    combination,
-  ])
+  return comb
 }
 
-export const filterCombinations = (combinations: CombinationType) => {
-  const newCombinations = combinations.filter((c) => new Set(c.map((p) => p[0])).size === c.length)
-  return newCombinations
+function calculateDamage(potionCombination: PotionColor[]): number {
+  const uniqueColors = new Set<string>()
+  for (const potion of potionCombination) {
+    uniqueColors.add(potion.color)
+  }
+  const numPotions = uniqueColors.size
+  switch (numPotions) {
+    case 1:
+      return 3
+    case 2:
+      return 5
+    case 3:
+      return 10
+    case 4:
+      return 20
+    default:
+      return 25
+  }
 }
 
-export const calculateDamage = (combination: PotionsType) => {
-  const damageByPotions: DamageType = {
-    1: 0.03,
-    2: 0.05,
-    3: 0.1,
-    4: 0.2,
-    5: 0.25,
+export const findOptimalAttacks = (potions: PotionColor[]): Attack[] => {
+  const potionCombinations: PotionColor[][] = []
+
+  for (let i = 1; i <= potions.length; i++) {
+    const combos = combinations(potions, i)
+    console.log({ combos })
+    potionCombinations.push(...Array.from(combos))
   }
 
-  const numPotions = combination.length
-
-  return damageByPotions[numPotions] || 0
+  const damageMap = new Map<string, number>()
+  potionCombinations.forEach((comb) => {
+    const damage = calculateDamage(comb)
+    const key = comb
+      .map((p) => p.color)
+      .sort()
+      .join(',')
+    if (!damageMap.has(key) || damage) {
+      damageMap.set(key, damage)
+    }
+  })
+  const attacks: Attack[] = []
+  damageMap.forEach((damage, colors) => {
+    const potionColors = colors.split(',')
+    const potionQuantities: PotionQuantities = {}
+    potionColors.forEach((color) => {
+      potionQuantities[color] = potions.filter((p) => p.color === color).length
+    })
+    const attack = { potionQuantities, damage }
+    attacks.push(attack)
+  })
+  attacks.sort((a, b) => b.damage - a.damage)
+  return attacks
 }
 
-export const sortByDamage = (
-  a: {
-    combination: PotionsType[]
-    damage: number
-  },
-  b: {
-    combination: PotionsType[]
-    damage: number
-  }
-) => {
-  return b.damage - a.damage
-}
+export const mappedPotions = (potionsSelected: Potion) => {
+  const calculatePotions = potionsSelected.reduce((acc, item) => {
+    return {
+      ...acc,
+      [item]: acc[item] ? acc[item] + 1 : 1,
+    }
+  }, {} as { [key: string]: number })
 
-export const mappedDamage = (values: { combination: PotionsType[]; damage: number }) => {
-  return `Using ${values.combination.length} the best attack is %${values.damage * 100}`
+  return Object.keys(calculatePotions).map((potion) => ({
+    label: ` ${potion} ${calculatePotions[potion]}`,
+  }))
 }

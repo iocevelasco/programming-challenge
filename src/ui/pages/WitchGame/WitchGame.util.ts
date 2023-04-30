@@ -1,3 +1,5 @@
+import { appColors } from 'utils/colors'
+
 export type Potion = string[]
 export type PotionCombination = PotionColor[][]
 export type PotionQuantities = {
@@ -12,12 +14,20 @@ export type PotionColor = {
 }
 
 export enum WitchGameMessages {
-  InputLabel = 'Select potions',
+  InputLabel = "Choose the witcher's potions",
   ButtonLabelReset = 'Reset Attacks',
-  ButtonLabelAttack = 'Attacks',
+  ButtonLabelAttack = 'Attack',
 }
 
 export const potionsCollections: Potion = ['red', 'blue', 'green', 'yellow', 'gray']
+
+export const colors: Record<string, string> = {
+  red: appColors.vividRed,
+  blue: appColors.darkBlue,
+  green: appColors.vividGreen,
+  yellow: appColors.lightYellow,
+  grey: appColors.darkGray,
+}
 
 export const combinations = (potions: PotionColor[], n: number) => {
   if (n === 1) {
@@ -58,7 +68,7 @@ export const findOptimalAttacks = (potions: PotionColor[]): Attack[] => {
 
   for (let i = 1; i <= potions.length; i++) {
     const combos = combinations(potions, i)
-    console.log({ combos })
+
     potionCombinations.push(...Array.from(combos))
   }
 
@@ -96,6 +106,7 @@ export const mappedPotions = (potionsSelected: Potion) => {
   }, {} as { [key: string]: number })
 
   return Object.keys(calculatePotions).map((potion) => ({
-    label: ` ${potion} ${calculatePotions[potion]}`,
+    label: `${potion} ${calculatePotions[potion]}`,
+    color: colors[potion],
   }))
 }

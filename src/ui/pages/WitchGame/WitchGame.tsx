@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { LayoutWrapperStyled, WrapperChipsStyled, ChipStyled } from './WitchGame.style'
-import { Button, Grid, InputLabel } from '@mui/material'
+import { Button, Grid, Typography } from '@mui/material'
 import RenderAttack from './components/RenderAttack'
 import {
   potionsCollections,
   WitchGameMessages,
   mappedPotions,
   findOptimalAttacks,
+  colors,
   type Potion,
   type Attack,
   type PotionQuantities,
@@ -57,25 +58,37 @@ export default function WitchGame() {
 
   return (
     <LayoutWrapperStyled>
-      <InputLabel> {WitchGameMessages.InputLabel}</InputLabel>
+      <Typography mb={2}> {WitchGameMessages.InputLabel}</Typography>
       <WrapperChipsStyled marginBottom={2}>
         {potionsCollections.map((potion, index) => (
-          <ChipStyled key={index} label={potion} onClick={() => handleAddPotion(potion)} />
+          <ChipStyled
+            $bgColor={colors[potion]}
+            key={index}
+            label={potion}
+            onClick={() => handleAddPotion(potion)}
+          />
         ))}
       </WrapperChipsStyled>
-      <WrapperChipsStyled marginBottom={2}>
-        {mappedPotionsSelected.map(({ label }, index) => (
-          <ChipStyled key={index} label={label} onDelete={() => handleDelete(index)} />
+      <WrapperChipsStyled marginBottom={2} $hasBackground>
+        {mappedPotionsSelected.map(({ label, color }, index) => (
+          <ChipStyled
+            $bgColor={color}
+            key={index}
+            label={label}
+            onDelete={() => handleDelete(index)}
+          />
         ))}
       </WrapperChipsStyled>
-      <Grid container mt={3}>
+      <Grid container mt={3} justifyContent="center" gap={2}>
         <Grid item>
           <Button onClick={handlerAttack} variant="contained" disabled={!potionsSelected.length}>
             {WitchGameMessages.ButtonLabelAttack}
           </Button>
         </Grid>
         <Grid item>
-          <Button onClick={handleResetAttack}>{WitchGameMessages.ButtonLabelReset}</Button>
+          <Button onClick={handleResetAttack} disabled={!attackList.length}>
+            {WitchGameMessages.ButtonLabelReset}
+          </Button>
         </Grid>
       </Grid>
       <RenderAttack attackCollection={attackList} />
